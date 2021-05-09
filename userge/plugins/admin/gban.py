@@ -11,7 +11,6 @@ from pyrogram.errors import (
     UserAdminInvalid,
 )
 from spamwatch.types import Ban
-import asyncio
 import time
 
 from pyrogram.errors import FloodWait, UserNotParticipant
@@ -139,6 +138,11 @@ async def gban_user(message: Message):
             del_in=5,
         )
         return
+    start = time.time()
+    await message.edit(
+        "💁‍♂️ `Collecting your Telegram Stats ...`\n"
+        "<b>Please wait it will take some time</b>"
+    )
     owner = await userge.get_me()
     u_mention = mention_html(owner.id, owner.first_name)
     unread_mentions = 0
@@ -183,7 +187,8 @@ async def gban_user(message: Message):
                     if is_creator:
                         channels_creator += 1
     except FloodWait as e:
-        await asyncio.sleep(e.x + 5)  
+        await asyncio.sleep(e.x + 5)
+
     results = f"""
 📊 <b><u>Telegram Stats</u></b>
 👤 User:  <b>{u_mention}</b>
@@ -201,7 +206,10 @@ async def gban_user(message: Message):
 <b>Unread Messages:</b> <code>{unread_msg}</code>
 <b>Unread Mentions:</b> <code>{unread_mentions}</code>
 """
+    end = time.time()
+    results += f"\n⏳ <i>Process took: {time_formatter(end - start)}.</i>"
     await message.edit(results)
+
     await message.edit(
         r"\\**#GBanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
