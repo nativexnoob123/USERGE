@@ -155,20 +155,21 @@ async def gban_user(message: Message):
     try:
         async for dialog in userge.iter_dialogs():
             chat_type = dialog.chat.type
-            try:
-                is_admin = await admin_check(dialog.chat.id, owner.id)
-                is_creator = dialog.chat.is_creator
-            except UserNotParticipant:
-                is_admin = False
-                is_creator = False
-            if chat_type in ["group", "supergroup"]:
-                groups += 1
-                if is_admin:
-                    groups_admin += 1
+            if chat_type in ["bot", "private"]:
+                pass
             else:
-                channels += 1
-                if is_admin:
-                    channels_admin += 1
+                try:
+                    is_admin = await admin_check(dialog.chat.id, owner.id)
+                except UserNotParticipant:
+                    is_admin = False
+                if chat_type in ["group", "supergroup"]:
+                    groups += 1
+                    if is_admin:
+                        groups_admin += 1
+                else:
+                    channels += 1
+                    if is_admin:
+                        channels_admin += 1
     except FloodWait as e:
         await asyncio.sleep(e.x + 5)
     await message.edit(
