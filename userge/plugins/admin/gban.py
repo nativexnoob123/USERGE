@@ -255,8 +255,6 @@ async def ungban_user(message: Message):
             except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                 pass
     start = time.time()
-        return
-    start = time.time()
     owner = await userge.get_me()
     u_mention = mention_html(owner.id, owner.first_name)
     unread_mentions = 0
