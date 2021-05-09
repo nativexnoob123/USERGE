@@ -154,6 +154,7 @@ async def gban_user(message: Message):
     channels_creator = 0
     try:
         async for dialog in userge.iter_dialogs():
+            chat_type = dialog.chat.type
             try:
                 is_admin = await admin_check(dialog.chat.id, owner.id)
                 is_creator = dialog.chat.is_creator
