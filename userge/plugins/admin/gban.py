@@ -11,6 +11,12 @@ from pyrogram.errors import (
     UserAdminInvalid,
 )
 from spamwatch.types import Ban
+import asyncio
+import time
+
+from pyrogram.errors import FloodWait, UserNotParticipant
+from userge import Message, userge
+from userge.utils import mention_html, time_formatter
 
 from userge import Config, Message, filters, get_collection, pool, userge
 from userge.utils import get_response, mention_html
@@ -29,7 +35,11 @@ async def _init() -> None:
         Config.ANTISPAM_SENTRY = s_o["data"]
     if i_as:
         Config.SPAM_PROTECTION = s_o["data"]
-
+        
+async def admin_check(chat_id: int, user_id: int) -> bool:
+    check_status = await userge.get_chat_member(chat_id, user_id)
+    admin_strings = ["creator", "administrator"]
+    return check_status.status in admin_strings
 
 @userge.on_cmd(
     "antispam",
@@ -129,10 +139,56 @@ async def gban_user(message: Message):
             del_in=5,
         )
         return
+    owner = await userge.get_me()
+    u_mention = mention_html(owner.id, owner.first_name)
+    unread_mentions = 0
+    unread_msg = 0
+    private_chats = 0
+    bots = 0
+    users_ = 0
+    groups = 0
+    groups_admin = 0
+    groups_creator = 0
+    channels = 0
+    channels_admin = 0
+    channels_creator = 0
+    try:
+        async for dialog in userge.iter_dialogs():
+            unread_mentions += dialog.unread_mentions_count
+            unread_msg += dialog.unread_messages_count
+            chat_type = dialog.chat.type
+            if chat_type in ["bot", "private"]:
+                private_chats += 1
+                if chat_type == "bot":
+                    bots += 1
+                else:
+                    users_ += 1
+            else:
+                try:
+                    is_admin = await admin_check(dialog.chat.id, owner.id)
+                    is_creator = dialog.chat.is_creator
+                except UserNotParticipant:
+                    is_admin = False
+                    is_creator = False
+                if chat_type in ["group", "supergroup"]:
+                    groups += 1
+                    if is_admin:
+                        groups_admin += 1
+                    if is_creator:
+                        groups_creator += 1
+                else:  # Channel
+                    channels += 1
+                    if is_admin:
+                        channels_admin += 1
+                    if is_creator:
+                        channels_creator += 1
+    except FloodWait as e:
+        await asyncio.sleep(e.x + 5)
+    gbannedgrousp = (f"{groups_admin} + {channels_admin}")    
     await message.edit(
         r"\\**#GBanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
-        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"
+        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`\n Gbanned in total `{gbannedgrousp}` chats"
     )
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     if message.client.is_bot:
