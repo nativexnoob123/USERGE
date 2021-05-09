@@ -188,32 +188,10 @@ async def gban_user(message: Message):
                         channels_creator += 1
     except FloodWait as e:
         await asyncio.sleep(e.x + 5)
-
-    results = f"""
-📊 <b><u>Telegram Stats</u></b>
-👤 User:  <b>{u_mention}</b>
-<b>Private Chats:</b> <code>{private_chats}</code><code>
-    • Users: {users_}
-    • Bots: {bots}</code>
-<b>Groups:</b> <code>{groups}</code>
-<b>Channels:</b> <code>{channels}</code>
-<b>Admin in Groups:</b> <code>{groups_admin}</code><code>
-    ★ Creator: {groups_creator}
-    • Admin Rights: {groups_admin - groups_creator}</code>
-<b>Admin in Channels:</b> <code>{channels_admin}</code><code>
-    ★ Creator: {channels_creator}
-    • Admin Rights: {channels_admin - channels_creator}</code>
-<b>Unread Messages:</b> <code>{unread_msg}</code>
-<b>Unread Mentions:</b> <code>{unread_mentions}</code>
-"""
-    end = time.time()
-    results += f"\n⏳ <i>Process took: {time_formatter(end - start)}.</i>"
-    await message.edit(results)
-
     await message.edit(
         r"\\**#GBanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
-        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`\n Gbanned in total `{groups_admin + channels_admin}` chats"
+        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`\nGbanned in total **`{groups_admin + channels_admin}`** chats"
     )
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     if message.client.is_bot:
