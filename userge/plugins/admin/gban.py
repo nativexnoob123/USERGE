@@ -187,7 +187,7 @@ async def gban_user(message: Message):
     await message.edit(
         r"\\**#GBanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
-        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`\nGbanned in total **`{groups_admin + channels_admin}`** chats"
+        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`\n**Gbanned Chats:** `{groups_admin + channels_admin}`"
     )
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     if message.client.is_bot:
@@ -266,10 +266,56 @@ async def ungban_user(message: Message):
                 )
             except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                 pass
+    start = time.time()
+    owner = await userge.get_me()
+    u_mention = mention_html(owner.id, owner.first_name)
+    unread_mentions = 0
+    unread_msg = 0
+    private_chats = 0
+    bots = 0
+    users_ = 0
+    groups = 0
+    groups_admin = 0
+    groups_creator = 0
+    channels = 0
+    channels_admin = 0
+    channels_creator = 0
+    try:
+        async for dialog in userge.iter_dialogs():
+            unread_mentions += dialog.unread_mentions_count
+            unread_msg += dialog.unread_messages_count
+            chat_type = dialog.chat.type
+            if chat_type in ["bot", "private"]:
+                private_chats += 1
+                if chat_type == "bot":
+                    bots += 1
+                else:
+                    users_ += 1
+            else:
+                try:
+                    is_admin = await admin_check(dialog.chat.id, owner.id)
+                    is_creator = dialog.chat.is_creator
+                except UserNotParticipant:
+                    is_admin = False
+                    is_creator = False
+                if chat_type in ["group", "supergroup"]:
+                    groups += 1
+                    if is_admin:
+                        groups_admin += 1
+                    if is_creator:
+                        groups_creator += 1
+                else:  # Channel
+                    channels += 1
+                    if is_admin:
+                        channels_admin += 1
+                    if is_creator:
+                        channels_creator += 1
+    except FloodWait as e:
+        await asyncio.sleep(e.x + 5)        
     await message.edit(
         r"\\**#UnGbanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
-        f"**User ID:** `{user_id}`"
+        f"**User ID:** `{user_id}`\n**UnGbanned Chats:** `{groups_admin + channels_admin}`"
     )
     LOG.info("UnGbanned %s", str(user_id))
 
