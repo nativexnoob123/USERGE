@@ -255,6 +255,8 @@ async def ungban_user(message: Message):
             except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                 pass
     start = time.time()
+        return
+    start = time.time()
     owner = await userge.get_me()
     u_mention = mention_html(owner.id, owner.first_name)
     unread_mentions = 0
@@ -270,36 +272,24 @@ async def ungban_user(message: Message):
     channels_creator = 0
     try:
         async for dialog in userge.iter_dialogs():
-            unread_mentions += dialog.unread_mentions_count
-            unread_msg += dialog.unread_messages_count
             chat_type = dialog.chat.type
             if chat_type in ["bot", "private"]:
-                private_chats += 1
-                if chat_type == "bot":
-                    bots += 1
-                else:
-                    users_ += 1
+                pass
             else:
                 try:
                     is_admin = await admin_check(dialog.chat.id, owner.id)
-                    is_creator = dialog.chat.is_creator
                 except UserNotParticipant:
                     is_admin = False
-                    is_creator = False
                 if chat_type in ["group", "supergroup"]:
                     groups += 1
                     if is_admin:
                         groups_admin += 1
-                    if is_creator:
-                        groups_creator += 1
-                else:  # Channel
+                else:
                     channels += 1
                     if is_admin:
                         channels_admin += 1
-                    if is_creator:
-                        channels_creator += 1
     except FloodWait as e:
-        await asyncio.sleep(e.x + 5)        
+        await asyncio.sleep(e.x + 5)       
     await message.edit(
         r"\\**#UnGbanned_User**//"
         f"\n\n**First Name:** {mention_html(user_id, firstname)}\n"
