@@ -139,10 +139,6 @@ async def gban_user(message: Message):
         )
         return
     start = time.time()
-    await message.edit(
-        "💁‍♂️ `Collecting your Telegram Stats ...`\n"
-        "<b>Please wait it will take some time</b>"
-    )
     owner = await userge.get_me()
     u_mention = mention_html(owner.id, owner.first_name)
     unread_mentions = 0
